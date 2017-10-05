@@ -7,7 +7,7 @@ all: coredns
 # Phony this to ensure we always build the binary.
 # TODO: Add .go file dependencies.
 .PHONY: coredns
-coredns: godeps
+coredns: check godeps
 	CGO_ENABLED=0 $(SYSTEM) go build -v -ldflags="-s -w -X github.com/coredns/coredns/coremain.gitCommit=$(GITCOMMIT)" -o $(BINARY)
 
 .PHONY: check
@@ -64,7 +64,7 @@ gen:
 
 .PHONY: linter
 linter:
-	go get -u github.com/alecthomas/gometalinter
+	go get -u github.com/alecthomas/gometalinter 2>&1
 	gometalinter --install golint
 	gometalinter --deadline=1m --disable-all --enable=gofmt --enable=golint --enable=vet --exclude=^vendor/ --exclude=^pb/ ./...
 
