@@ -1,13 +1,13 @@
-// +build k8s
+// +build ci
 
-package test
+package kubernetes
 
 import (
 	"testing"
-	"time"
 
 	"github.com/coredns/coredns/plugin/test"
 
+	testk8s "github.com/coredns/ci/test/kubernetes"
 	"github.com/miekg/dns"
 )
 
@@ -30,31 +30,15 @@ var dnsTestCasesAllNSExposed = []test.Case{
 
 func TestKubernetesNSExposed(t *testing.T) {
 	corefile :=
-		`.:0 {
-    kubernetes cluster.local {
-                endpoint http://localhost:8080
+		`    .:53 {
+      errors
+      log
+      kubernetes cluster.local
     }
 `
-
-	server, udp, _, err := CoreDNSServerAndPorts(corefile)
+	err := testk8s.LoadCorefile(corefile)
 	if err != nil {
-		t.Fatalf("Could not get CoreDNS serving instance: %s", err)
+		t.Fatalf("Could not load corefile: %s", err)
 	}
-	defer server.Stop()
-
-	// Work-around for timing condition that results in no-data being returned in test environment.
-	time.Sleep(3 * time.Second)
-
-	for _, tc := range dnsTestCasesAllNSExposed {
-
-		c := new(dns.Client)
-		m := tc.Msg()
-
-		res, _, err := c.Exchange(m, udp)
-		if err != nil {
-			t.Fatalf("Could not send query: %s", err)
-		}
-
-		test.SortAndCheck(t, res, tc)
-	}
+	testk8s.DoIntegrationTests(t, dnsTestCasesAllNSExposed, "test-1")
 }
