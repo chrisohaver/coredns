@@ -64,7 +64,7 @@ gen:
 
 .PHONY: linter
 linter:
-	go get -u github.com/alecthomas/gometalinter 2>&1
+	go get -u github.com/alecthomas/gometalinter
 	gometalinter --install golint
 	gometalinter --deadline=1m --disable-all --enable=gofmt --enable=golint --enable=vet --exclude=^vendor/ --exclude=^pb/ ./...
 
