@@ -22,7 +22,7 @@ func (h *handler) Startup() error {
 	// Reloading the plugin without changing the listening address results
 	// in an error unless we reuse the port because Startup is called for
 	// new handlers before Shutdown is called for the old ones.
-	ln, err := reuseport.Listen("tcp", h.addr)
+	ln, err := reuseport.Listen("tcp", h.addr, nil)
 	if err != nil {
 		log.Errorf("Failed to start pprof handler: %s", err)
 		return err

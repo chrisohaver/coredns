@@ -10,28 +10,37 @@ import (
 
 	"github.com/coredns/coredns/plugin/pkg/log"
 
+	"github.com/cilium/ebpf"
 	"golang.org/x/sys/unix"
 )
 
-func control(network, address string, c syscall.RawConn) error {
-	c.Control(func(fd uintptr) {
-		if err := unix.SetsockoptInt(int(fd), unix.SOL_SOCKET, unix.SO_REUSEPORT, 1); err != nil {
-			log.Warningf("Failed to set SO_REUSEPORT on socket: %s", err)
-		}
-	})
-	return nil
+func control(socketFilters []*ebpf.Program) func(network, address string, c syscall.RawConn) error {
+	return func(network, address string, c syscall.RawConn) error {
+		c.Control(func(fd uintptr) {
+			if err := unix.SetsockoptInt(int(fd), unix.SOL_SOCKET, unix.SO_REUSEPORT, 1); err != nil {
+				log.Warningf("Failed to set SO_REUSEPORT on socket: %s", err)
+			}
+			const SO_ATTACH_BPF = 50
+			for _, socketFilter := range socketFilters {
+				if err := unix.SetsockoptInt(int(fd), unix.SOL_SOCKET, SO_ATTACH_BPF, socketFilter.FD()); err != nil {
+					log.Warningf("Failed to attach BPF '%s' to socket: %s", socketFilter.String(), err)
+				}
+			}
+		})
+		return nil
+	}
 }
 
 // Listen announces on the local network address. See net.Listen for more information.
 // If SO_REUSEPORT is available it will be set on the socket.
-func Listen(network, addr string) (net.Listener, error) {
-	lc := net.ListenConfig{Control: control}
+func Listen(network, addr string, socketFilters []*ebpf.Program) (net.Listener, error) {
+	lc := net.ListenConfig{Control: control(socketFilters)}
 	return lc.Listen(context.Background(), network, addr)
 }
 
 // ListenPacket announces on the local network address. See net.ListenPacket for more information.
 // If SO_REUSEPORT is available it will be set on the socket.
-func ListenPacket(network, addr string) (net.PacketConn, error) {
-	lc := net.ListenConfig{Control: control}
+func ListenPacket(network, addr string, socketFilters []*ebpf.Program) (net.PacketConn, error) {
+	lc := net.ListenConfig{Control: control(socketFilters)}
 	return lc.ListenPacket(context.Background(), network, addr)
 }

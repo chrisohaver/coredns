@@ -31,7 +31,7 @@ type ready struct {
 }
 
 func (rd *ready) onStartup() error {
-	ln, err := reuseport.Listen("tcp", rd.Addr)
+	ln, err := reuseport.Listen("tcp", rd.Addr, nil)
 	if err != nil {
 		return err
 	}

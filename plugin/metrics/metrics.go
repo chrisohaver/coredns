@@ -81,7 +81,7 @@ func (m *Metrics) ZoneNames() []string {
 
 // OnStartup sets up the metrics on startup.
 func (m *Metrics) OnStartup() error {
-	ln, err := reuseport.Listen("tcp", m.Addr)
+	ln, err := reuseport.Listen("tcp", m.Addr, nil)
 	if err != nil {
 		log.Errorf("Failed to start metrics handler: %s", err)
 		return err

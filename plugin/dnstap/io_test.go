@@ -48,7 +48,7 @@ func TestTransport(t *testing.T) {
 	}
 
 	for _, param := range transport {
-		l, err := reuseport.Listen(param[0], param[1])
+		l, err := reuseport.Listen(param[0], param[1], nil)
 		if err != nil {
 			t.Fatalf("Cannot start listener: %s", err)
 		}
@@ -76,7 +76,7 @@ func TestTransport(t *testing.T) {
 func TestRace(t *testing.T) {
 	count := 10
 
-	l, err := reuseport.Listen("tcp", ":0")
+	l, err := reuseport.Listen("tcp", ":0", nil)
 	if err != nil {
 		t.Fatalf("Cannot start listener: %s", err)
 	}
@@ -109,7 +109,7 @@ func TestRace(t *testing.T) {
 func TestReconnect(t *testing.T) {
 	count := 5
 
-	l, err := reuseport.Listen("tcp", ":0")
+	l, err := reuseport.Listen("tcp", ":0", nil)
 	if err != nil {
 		t.Fatalf("Cannot start listener: %s", err)
 	}
@@ -135,7 +135,7 @@ func TestReconnect(t *testing.T) {
 	// Close listener
 	l.Close()
 	// And start TCP listener again on the same port
-	l, err = reuseport.Listen("tcp", addr)
+	l, err = reuseport.Listen("tcp", addr, nil)
 	if err != nil {
 		t.Fatalf("Cannot start listener: %s", err)
 	}
