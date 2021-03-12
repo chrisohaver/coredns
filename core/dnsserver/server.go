@@ -47,11 +47,6 @@ type Server struct {
 	socketFilters []*ebpf.Program // BPFs attached to socket
 }
 
-// BPF enables plugins to define BPF socket filter programs to be added to the server's socket
-type BPF interface {
-	SocketFilters() []*ebpf.Program
-}
-
 // NewServer returns a new CoreDNS server and compiles all plugins in to it. By default CH class
 // queries are blocked unless queries from enableChaos are loaded.
 func NewServer(addr string, group []*Config) (*Server, error) {
@@ -78,6 +73,9 @@ func NewServer(addr string, group []*Config) (*Server, error) {
 		// set the config per zone
 		s.zones[site.Zone] = site
 
+		// add socket filters from the Config
+		s.socketFilters = append(s.socketFilters, site.SocketFilters...)
+
 		// compile custom plugin for everything
 		var stack plugin.Handler
 		for i := len(site.Plugin) - 1; i >= 0; i-- {
@@ -96,11 +94,6 @@ func NewServer(addr string, group []*Config) (*Server, error) {
 			// Unblock CH class queries when any of these plugins are loaded.
 			if _, ok := EnableChaos[stack.Name()]; ok {
 				s.classChaos = true
-			}
-
-			// if plugin defines BPF programs, add to bpfs
-			if bpf, ok := stack.(BPF); ok {
-				s.socketFilters = append(s.socketFilters, bpf.SocketFilters()...)
 			}
 		}
 		site.pluginChain = stack

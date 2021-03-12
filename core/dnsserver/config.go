@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cilium/ebpf"
 	"github.com/coredns/caddy"
 	"github.com/coredns/coredns/plugin"
 )
@@ -41,6 +42,9 @@ type Config struct {
 	// to this handler. The primary use is to limit access to a reverse zone
 	// on a non-octet boundary, i.e. /17
 	FilterFunc func(string) bool
+
+	// SocketFilters are attached to the listening socket
+	SocketFilters []*ebpf.Program
 
 	// TLSConfig when listening for encrypted connections (gRPC, DNS-over-TLS).
 	TLSConfig *tls.Config
