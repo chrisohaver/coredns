@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cilium/ebpf"
 	"github.com/coredns/caddy"
 	"github.com/coredns/coredns/plugin"
 	"github.com/coredns/coredns/plugin/metrics/vars"
@@ -42,6 +43,13 @@ type Server struct {
 	trace        trace.Trace        // the trace plugin for the server
 	debug        bool               // disable recover()
 	classChaos   bool               // allow non-INET class queries
+
+	socketFilters []*ebpf.Program // BPFs attached to socket
+}
+
+// BPF enables plugins to define BPF socket filter programs to be added to the server's socket
+type BPF interface {
+	SocketFilters() []*ebpf.Program
 }
 
 // NewServer returns a new CoreDNS server and compiles all plugins in to it. By default CH class
@@ -89,6 +97,11 @@ func NewServer(addr string, group []*Config) (*Server, error) {
 			if _, ok := EnableChaos[stack.Name()]; ok {
 				s.classChaos = true
 			}
+
+			// if plugin defines BPF programs, add to bpfs
+			if bpf, ok := stack.(BPF); ok {
+				s.socketFilters = append(s.socketFilters, bpf.SocketFilters()...)
+			}
 		}
 		site.pluginChain = stack
 	}
@@ -134,7 +147,7 @@ func (s *Server) ServePacket(p net.PacketConn) error {
 
 // Listen implements caddy.TCPServer interface.
 func (s *Server) Listen() (net.Listener, error) {
-	l, err := reuseport.Listen("tcp", s.Addr[len(transport.DNS+"://"):])
+	l, err := reuseport.Listen("tcp", s.Addr[len(transport.DNS+"://"):], s.socketFilters)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +161,7 @@ func (s *Server) WrapListener(ln net.Listener) net.Listener {
 
 // ListenPacket implements caddy.UDPServer interface.
 func (s *Server) ListenPacket() (net.PacketConn, error) {
-	p, err := reuseport.ListenPacket("udp", s.Addr[len(transport.DNS+"://"):])
+	p, err := reuseport.ListenPacket("udp", s.Addr[len(transport.DNS+"://"):], s.socketFilters)
 	if err != nil {
 		return nil, err
 	}

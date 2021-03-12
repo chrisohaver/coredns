@@ -63,7 +63,7 @@ func (s *ServerTLS) ServePacket(p net.PacketConn) error { return nil }
 
 // Listen implements caddy.TCPServer interface.
 func (s *ServerTLS) Listen() (net.Listener, error) {
-	l, err := reuseport.Listen("tcp", s.Addr[len(transport.TLS+"://"):])
+	l, err := reuseport.Listen("tcp", s.Addr[len(transport.TLS+"://"):], s.socketFilters)
 	if err != nil {
 		return nil, err
 	}
