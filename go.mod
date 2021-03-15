@@ -11,6 +11,7 @@ require (
 	github.com/aws/aws-sdk-go v1.37.10
 	github.com/cilium/ebpf v0.3.0
 	github.com/coredns/caddy v1.1.0
+	github.com/chrisohaver/ebpf v0.0.0
 	github.com/dnstap/golang-dnstap v0.4.0
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/farsightsec/golang-framestream v0.3.0
@@ -41,3 +42,5 @@ require (
 	k8s.io/client-go v0.20.2
 	k8s.io/klog v1.0.0
 )
+
+replace github.com/chrisohaver/ebpf v0.0.0 => ../../chrisohaver/ebpf
