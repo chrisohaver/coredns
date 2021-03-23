@@ -16,7 +16,6 @@ import (
 func TestHealth(t *testing.T) {
 	hcReadTimeout = 10 * time.Millisecond
 	hcWriteTimeout = 10 * time.Millisecond
-	readTimeout = 10 * time.Millisecond
 	defaultTimeout = 10 * time.Millisecond
 
 	i := uint32(0)
@@ -37,6 +36,7 @@ func TestHealth(t *testing.T) {
 
 	p := NewProxy(s.Addr, transport.DNS)
 	f := New()
+	f.opts.readTimeout = 10 * time.Millisecond
 	f.SetProxy(p)
 	defer f.OnShutdown()
 
@@ -54,7 +54,6 @@ func TestHealth(t *testing.T) {
 
 func TestHealthNoRecursion(t *testing.T) {
 	hcReadTimeout = 10 * time.Millisecond
-	readTimeout = 10 * time.Millisecond
 	defaultTimeout = 10 * time.Millisecond
 	hcWriteTimeout = 10 * time.Millisecond
 
@@ -77,6 +76,7 @@ func TestHealthNoRecursion(t *testing.T) {
 	p := NewProxy(s.Addr, transport.DNS)
 	p.health.SetRecursionDesired(false)
 	f := New()
+	f.opts.readTimeout = 10 * time.Millisecond
 	f.SetProxy(p)
 	defer f.OnShutdown()
 
@@ -95,7 +95,6 @@ func TestHealthNoRecursion(t *testing.T) {
 func TestHealthTimeout(t *testing.T) {
 	hcReadTimeout = 10 * time.Millisecond
 	hcWriteTimeout = 10 * time.Millisecond
-	readTimeout = 10 * time.Millisecond
 	defaultTimeout = 10 * time.Millisecond
 
 	i := uint32(0)
@@ -121,6 +120,7 @@ func TestHealthTimeout(t *testing.T) {
 
 	p := NewProxy(s.Addr, transport.DNS)
 	f := New()
+	f.opts.readTimeout = 10 * time.Millisecond
 	f.SetProxy(p)
 	defer f.OnShutdown()
 
@@ -139,7 +139,6 @@ func TestHealthTimeout(t *testing.T) {
 func TestHealthMaxFails(t *testing.T) {
 	hcReadTimeout = 10 * time.Millisecond
 	hcWriteTimeout = 10 * time.Millisecond
-	readTimeout = 10 * time.Millisecond
 	defaultTimeout = 10 * time.Millisecond
 	hcInterval = 10 * time.Millisecond
 
@@ -150,6 +149,7 @@ func TestHealthMaxFails(t *testing.T) {
 
 	p := NewProxy(s.Addr, transport.DNS)
 	f := New()
+	f.opts.readTimeout = 10 * time.Millisecond
 	f.maxfails = 2
 	f.SetProxy(p)
 	defer f.OnShutdown()
@@ -169,7 +169,6 @@ func TestHealthMaxFails(t *testing.T) {
 func TestHealthNoMaxFails(t *testing.T) {
 	hcReadTimeout = 10 * time.Millisecond
 	hcWriteTimeout = 10 * time.Millisecond
-	readTimeout = 10 * time.Millisecond
 	defaultTimeout = 10 * time.Millisecond
 	hcInterval = 10 * time.Millisecond
 
@@ -187,6 +186,7 @@ func TestHealthNoMaxFails(t *testing.T) {
 
 	p := NewProxy(s.Addr, transport.DNS)
 	f := New()
+	f.opts.readTimeout = 10 * time.Millisecond
 	f.maxfails = 0
 	f.SetProxy(p)
 	defer f.OnShutdown()

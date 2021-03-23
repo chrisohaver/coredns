@@ -97,7 +97,7 @@ func (p *Proxy) Connect(ctx context.Context, state request.Request, opts options
 		pc.c.UDPSize = 512
 	}
 
-	pc.c.SetWriteDeadline(time.Now().Add(maxTimeout))
+	pc.c.SetWriteDeadline(time.Now().Add(opts.writeTimeout))
 	if err := pc.c.WriteMsg(state.Req); err != nil {
 		pc.c.Close() // not giving it back
 		if err == io.EOF && cached {
@@ -107,7 +107,7 @@ func (p *Proxy) Connect(ctx context.Context, state request.Request, opts options
 	}
 
 	var ret *dns.Msg
-	pc.c.SetReadDeadline(time.Now().Add(readTimeout))
+	pc.c.SetReadDeadline(time.Now().Add(opts.readTimeout))
 	for {
 		ret, err = pc.c.ReadMsg()
 		if err != nil {

@@ -55,7 +55,20 @@ type Forward struct {
 
 // New returns a new Forward.
 func New() *Forward {
-	f := &Forward{maxfails: 2, tlsConfig: new(tls.Config), expire: defaultExpire, p: new(random), from: ".", hcInterval: hcInterval, opts: options{forceTCP: false, preferUDP: false, hcRecursionDesired: true}}
+	f := &Forward{maxfails: 2,
+		tlsConfig:  new(tls.Config),
+		expire:     defaultExpire,
+		p:          new(random),
+		from:       ".",
+		hcInterval: hcInterval,
+		opts: options{
+			forceTCP:           false,
+			preferUDP:          false,
+			hcRecursionDesired: true,
+			writeTimeout:       defaultWriteTimeout,
+			readTimeout:        defaultReadTimeout,
+		},
+	}
 	return f
 }
 
@@ -232,6 +245,13 @@ type options struct {
 	forceTCP           bool
 	preferUDP          bool
 	hcRecursionDesired bool
+	writeTimeout       time.Duration
+	readTimeout        time.Duration
 }
 
 var defaultTimeout = 5 * time.Second
+
+const (
+	defaultWriteTimeout = time.Second * 2
+	defaultReadTimeout  = time.Second * 2
+)

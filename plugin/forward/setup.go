@@ -253,7 +253,26 @@ func parseBlock(c *caddy.Controller, f *Forward) error {
 		}
 		f.ErrLimitExceeded = errors.New("concurrent queries exceeded maximum " + c.Val())
 		f.maxConcurrent = int64(n)
-
+	case "read_timeout":
+		args := c.RemainingArgs()
+		if len(args) != 1 {
+			return plugin.Error("forward", c.ArgErr())
+		}
+		var err error
+		f.opts.readTimeout, err = time.ParseDuration(args[0])
+		if err != nil {
+			return plugin.Error("forward", c.Errf("failed to convert read_timeout: %s", args[0]))
+		}
+	case "write_timeout":
+		args := c.RemainingArgs()
+		if len(args) != 1 {
+			return plugin.Error("forward", c.ArgErr())
+		}
+		var err error
+		f.opts.writeTimeout, err = time.ParseDuration(args[0])
+		if err != nil {
+			return plugin.Error("forward", c.Errf("failed to convert write_timeout: %s", args[0]))
+		}
 	default:
 		return c.Errf("unknown property '%s'", c.Val())
 	}
