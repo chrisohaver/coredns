@@ -14,7 +14,7 @@ var (
 		Subsystem: subsystem,
 		Name:      "requests_total",
 		Help:      "Counter of DNS requests made per zone, protocol and family.",
-	}, []string{"server", "zone", "proto", "family", "type"})
+	}, []string{"server", "zone", "proto", "family", "type", "plugin"})
 
 	RequestDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
 		Namespace: plugin.Namespace,

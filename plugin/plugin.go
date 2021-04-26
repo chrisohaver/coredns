@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/coredns/coredns/currentplugin"
 	"github.com/miekg/dns"
 	ot "github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus"
@@ -77,6 +78,8 @@ func NextOrFailure(name string, next Handler, ctx context.Context, w dns.Respons
 			defer child.Finish()
 			ctx = ot.ContextWithSpan(ctx, child)
 		}
+		plugin := ctx.Value(currentplugin.Key{}).(*string)
+		*plugin = next.Name()
 		return next.ServeDNS(ctx, w, r)
 	}
 

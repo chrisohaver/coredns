@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/coredns/caddy"
+	"github.com/coredns/coredns/currentplugin"
 	"github.com/coredns/coredns/plugin"
 	"github.com/coredns/coredns/plugin/metrics/vars"
 	"github.com/coredns/coredns/plugin/pkg/edns"
@@ -246,6 +247,8 @@ func (s *Server) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg)
 				errorAndMetricsFunc(s.Addr, w, r, dns.RcodeRefused)
 				return
 			}
+			pluginName := h.pluginChain.Name()
+			ctx = context.WithValue(ctx, currentplugin.Key{}, &pluginName)
 			if r.Question[0].Qtype != dns.TypeDS {
 				if h.FilterFunc == nil {
 					rcode, _ := h.pluginChain.ServeDNS(ctx, w, r)
@@ -279,6 +282,8 @@ func (s *Server) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg)
 
 	if r.Question[0].Qtype == dns.TypeDS && dshandler != nil && dshandler.pluginChain != nil {
 		// DS request, and we found a zone, use the handler for the query.
+		pluginName := dshandler.pluginChain.Name()
+		ctx = context.WithValue(ctx, currentplugin.Key{}, &pluginName)
 		rcode, _ := dshandler.pluginChain.ServeDNS(ctx, w, r)
 		if !plugin.ClientWrite(rcode) {
 			errorFunc(s.Addr, w, r, rcode)
@@ -288,6 +293,8 @@ func (s *Server) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg)
 
 	// Wildcard match, if we have found nothing try the root zone as a last resort.
 	if h, ok := s.zones["."]; ok && h.pluginChain != nil {
+		pluginName := h.pluginChain.Name()
+		ctx = context.WithValue(ctx, currentplugin.Key{}, &pluginName)
 		rcode, _ := h.pluginChain.ServeDNS(ctx, w, r)
 		if !plugin.ClientWrite(rcode) {
 			errorFunc(s.Addr, w, r, rcode)
@@ -338,8 +345,7 @@ func errorAndMetricsFunc(server string, w dns.ResponseWriter, r *dns.Msg, rc int
 	answer := new(dns.Msg)
 	answer.SetRcode(r, rc)
 	state.SizeAndDo(answer)
-
-	vars.Report(server, state, vars.Dropped, rcode.ToString(rc), answer.Len(), time.Now())
+	vars.Report(server, state, vars.Dropped, rcode.ToString(rc), answer.Len(), time.Now(), "")
 
 	w.WriteMsg(answer)
 }
