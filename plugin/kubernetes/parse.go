@@ -63,13 +63,18 @@ func parseRequest(name, zone string) (r recordRequest, err error) {
 		return r, nil
 	}
 
+	wild := false
+	defer warnWild(&wild, name)
+
 	r.namespace = segs[last]
+	wild = wild || wildcard(r.namespace)
 	last--
 	if last < 0 {
 		return r, nil
 	}
 
 	r.service = segs[last]
+	wild = wild || wildcard(r.service)
 	last--
 	if last < 0 {
 		return r, nil
@@ -81,15 +86,24 @@ func parseRequest(name, zone string) (r recordRequest, err error) {
 
 	case 0: // endpoint only
 		r.endpoint = segs[last]
+		wild = wild || wildcard(r.endpoint)
 	case 1: // service and port
 		r.protocol = stripUnderscore(segs[last])
+		wild = wild || wildcard(r.protocol)
 		r.port = stripUnderscore(segs[last-1])
+		wild = wild || wildcard(r.port)
 
 	default: // too long
 		return r, errInvalidRequest
 	}
 
 	return r, nil
+}
+
+var warnWild = func(wild *bool, name string) {
+	if *wild {
+		log.Warningf("Deprecated wildcard query received. Wildcard queries will no longer be supported in the next minor release. %q", name)
+	}
 }
 
 // stripUnderscore removes a prefixed underscore from s.

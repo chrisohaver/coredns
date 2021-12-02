@@ -59,4 +59,40 @@ func TestParseInvalidRequest(t *testing.T) {
 	}
 }
 
+func TestParseRequestWildWarning(t *testing.T) {
+	tests := []struct {
+		query string
+		warn  bool
+	}{
+		// non-wildcards
+		{"webs.mynamespace.svc.inter.webs.tests.", false},            // service
+		{"endpoint.webs.mynamespace.svc.inter.webs.tests.", false},   // endpoint
+		{"_http._tcp.webs.mynamespace.svc.inter.webs.tests.", false}, // srv
+		// wildcards
+		{"*.webs.mynamespace.svc.inter.webs.tests.", true},       // wild endpoint name
+		{"*._tcp.webs.mynamespace.svc.inter.webs.tests.", true},  // wild port
+		{"_http.*.webs.mynamespace.svc.inter.webs.tests.", true}, // wild protocol
+		{"*.mynamespace.svc.inter.webs.tests.", true},            // wild service name
+		{"webs.*.svc.inter.webs.tests.", true},                   // wild namespace
+	}
+	for i, tc := range tests {
+		m := new(dns.Msg)
+		m.SetQuestion(tc.query, dns.TypeA)
+		state := request.Request{Zone: zone, Req: m}
+
+		var warned bool
+		warnWild = func(wild *bool, name string) {
+			warned = *wild
+		}
+		_, e := parseRequest(state.Name(), state.Zone)
+		if e != nil {
+			t.Errorf("Test %d, expected no error, got '%v'.", i, e)
+		}
+
+		if warned != tc.warn {
+			t.Errorf("Test %d, expected warning: %v, got %v", i, tc.warn, warned)
+		}
+	}
+}
+
 const zone = "inter.webs.tests."
