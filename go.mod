@@ -7,7 +7,7 @@ require (
 	github.com/Azure/go-autorest/autorest v0.11.24
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.11
 	github.com/apparentlymart/go-cidr v1.1.0
-	github.com/aws/aws-sdk-go v1.42.52
+	github.com/aws/aws-sdk-go v1.43.21
 	github.com/coredns/caddy v1.1.1
 	github.com/dnstap/golang-dnstap v0.4.0
 	github.com/farsightsec/golang-framestream v0.3.0
@@ -92,9 +92,9 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.17.0 // indirect
 	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
+	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
-	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
+	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11 // indirect
 	golang.org/x/tools v0.1.6-0.20210726203631-07bc1bf47fb2 // indirect
